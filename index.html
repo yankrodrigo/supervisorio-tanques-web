@@ -303,6 +303,10 @@
   .btn.ligar:hover { background: rgba(63,203,110,0.1); border-color: var(--on); color: var(--on); }
   .btn.desligar:hover { background: rgba(91,107,122,0.15); border-color: var(--text-muted); }
 
+  .pump-reset { margin-top: 10px; }
+  .btn.reset { width: 100%; }
+  .btn.reset:hover { background: rgba(240,167,59,0.1); border-color: var(--amber); color: var(--amber); }
+
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 
@@ -556,6 +560,9 @@
           <button class="btn ligar" id="btnLigar1" disabled onclick="enviarComando('Bomba1','ligar')">Ligar</button>
           <button class="btn desligar" id="btnDesligar1" disabled onclick="enviarComando('Bomba1','desligar')">Desligar</button>
         </div>
+        <div class="pump-reset">
+          <button class="btn reset" id="btnReset1" type="button" disabled onclick="pedirReset('Bomba1')">Reset</button>
+        </div>
         <div class="pump-hint" id="dicaBomba1">Aguardando o modo da bomba…</div>
       </div>
       <div class="pump-card">
@@ -574,6 +581,9 @@
           <button class="btn ligar" id="btnLigar2" disabled onclick="enviarComando('Bomba2','ligar')">Ligar</button>
           <button class="btn desligar" id="btnDesligar2" disabled onclick="enviarComando('Bomba2','desligar')">Desligar</button>
         </div>
+        <div class="pump-reset">
+          <button class="btn reset" id="btnReset2" type="button" disabled onclick="pedirReset('Bomba2')">Reset</button>
+        </div>
         <div class="pump-hint" id="dicaBomba2">Aguardando o modo da bomba…</div>
       </div>
       <div class="pump-card">
@@ -591,6 +601,9 @@
         <div class="pump-buttons">
           <button class="btn ligar" id="btnLigar3" disabled onclick="enviarComando('Bomba3','ligar')">Ligar</button>
           <button class="btn desligar" id="btnDesligar3" disabled onclick="enviarComando('Bomba3','desligar')">Desligar</button>
+        </div>
+        <div class="pump-reset">
+          <button class="btn reset" id="btnReset3" type="button" disabled onclick="pedirReset('Bomba3')">Reset</button>
         </div>
         <div class="pump-hint" id="dicaBomba3">Aguardando o modo da bomba…</div>
       </div>
@@ -706,6 +719,7 @@
       connDot.className = 'conn-dot online';
       connLabel.textContent = 'conectado';
       TOPICOS.forEach(t => client.subscribe('supervisorio/' + t));
+      document.querySelectorAll('.btn.reset').forEach(b => { b.disabled = false; });
     });
 
     client.on('reconnect', () => {
@@ -801,6 +815,16 @@
       return;
     }
     client.publish('supervisorio/modo' + bomba, modo);
+  }
+
+  function pedirReset(bomba) {
+    const numero = bomba.replace('Bomba', '');
+    if (!confirm('Enviar RESET para a Bomba ' + numero + '?')) return;
+    client.publish('supervisorio/reset' + bomba, 'reset');
+    const btn = document.getElementById('btnReset' + numero);
+    btn.disabled = true;
+    btn.textContent = 'Resetando…';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Reset'; }, 2500);
   }
 
   function enviarComando(bomba, acao) {
